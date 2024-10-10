@@ -117,3 +117,7 @@ def calculateStakerProportion(stakerWeightStr: str, totalWeightStr: str) -> str:
     preProportion2 = preProportion1 / Decimal('1000000000000000')
 
     return "{}".format(preProportion2, 'f')
+
+def subtractBig(a:str, b:str) -> str:
+    diff = Decimal(a) - Decimal(b)
+    return format(diff, 'f')

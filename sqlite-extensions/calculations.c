@@ -460,6 +460,36 @@ void calculate_staker_proportion(sqlite3_context *context, int argc, sqlite3_val
     sqlite3_result_text(context, tokens, -1, SQLITE_TRANSIENT);
 }
 
+char* _subtract_big(const char* a, const char* b) {
+    return call_python_func("subtractBig", a, b);
+}
+
+void subtract_big(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    if (argc != 2) {
+        sqlite3_result_error(context, "subtract_big() requires two arguments", -1);
+        return;
+    }
+    const char* a = (const char*)sqlite3_value_text(argv[0]);
+    if (!a) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    const char* b = (const char*)sqlite3_value_text(argv[1]);
+    if (!b) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    char* tokens = _subtract_big(a, b);
+    if (!tokens) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    sqlite3_result_text(context, tokens, -1, SQLITE_TRANSIENT);
+}
+
 int sqlite3_calculations_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi) {
     SQLITE_EXTENSION_INIT2(pApi);
 
@@ -525,6 +555,12 @@ int sqlite3_calculations_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_ro
     }
 
     rc = sqlite3_create_function(db, "calculate_staker_proportion", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, calculate_staker_proportion, 0, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    rc = sqlite3_create_function(db, "subtract_big", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, subtract_big, 0, 0);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
         return rc;

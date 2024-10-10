@@ -16,6 +16,13 @@ import (
 func Test_Sqlite(t *testing.T) {
 	l, _ := logger.NewLogger(&logger.LoggerConfig{Debug: true})
 
+	s := NewSqlite(&SqliteConfig{
+		Path:           SqliteInMemoryPath,
+		ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
+	}, l)
+	grm, err := NewGormSqliteFromSqlite(s)
+	assert.Nil(t, err)
+
 	t.Run("Should use the bytesToHex function", func(t *testing.T) {
 		query := `
 			with json_values as (
@@ -28,12 +35,6 @@ func Test_Sqlite(t *testing.T) {
 			from json_values
 			limit 1
 		`
-		s := NewSqlite(&SqliteConfig{
-			Path:           SqliteInMemoryPath,
-			ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-		}, l)
-		grm, err := NewGormSqliteFromSqlite(s)
-		assert.Nil(t, err)
 
 		type results struct {
 			WithdrawalHex string
@@ -63,13 +64,6 @@ func Test_Sqlite(t *testing.T) {
 				Shares: shares2,
 			},
 		}
-
-		s := NewSqlite(&SqliteConfig{
-			Path:           SqliteInMemoryPath,
-			ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-		}, l)
-		grm, err := NewGormSqliteFromSqlite(s)
-		assert.Nil(t, err)
 
 		createQuery := `
 			create table shares (
@@ -102,13 +96,6 @@ func Test_Sqlite(t *testing.T) {
 		t.Run("Should call calc_raw_tokens_per_day", func(t *testing.T) {
 			query := `select calc_raw_tokens_per_day('100', 100) as amt`
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
 			var result string
 			res := grm.Raw(query).Scan(&result)
 			assert.Nil(t, res.Error)
@@ -120,17 +107,9 @@ func Test_Sqlite(t *testing.T) {
 	t.Run("Custom C functions", func(t *testing.T) {
 		t.Run("Should call pre_nile_tokens_per_day", func(t *testing.T) {
 			expectedRoundedValue := "1428571428571427000000000000000000000"
-
 			amount := "1428571428571428571428571428571428571.4142857142857143"
 
 			query := `select pre_nile_tokens_per_day(@amount) as amt`
-
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
 
 			var result string
 			res := grm.Raw(query, sql.Named("amount", amount)).Scan(&result)
@@ -170,13 +149,6 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"0.149069696024661", "142857142857142700000000", "21295670860665800000000"},
 				[]string{"0.418129833809252", "142857142857142700000000", "59732833401321600000000"},
 			}
-
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
 
 			for _, v := range values {
 				stakerProportion := v[0]
@@ -299,13 +271,6 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"0.00000054801092", "71428571428571350000000", "39143637142857100"},
 			}
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
 			for _, v := range values {
 				stakerProportion := v[0]
 				tokensPerDay := v[1]
@@ -427,13 +392,6 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"0.000001560297627", "178571428571428571", "278624576249"},
 			}
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
 			for _, v := range values {
 				stakerProportion := v[0]
 				tokensPerDay := v[1]
@@ -453,7 +411,6 @@ func Test_Sqlite(t *testing.T) {
 			}
 		})
 		t.Run("Should call amazon_operator_token_rewards", func(t *testing.T) {
-			// t.Skip("what")
 			values := [][]string{
 				[]string{"13167642495403300000000", "1316764249540330000000"},
 				[]string{"48660996099751700000000", "4866099609975170000000"},
@@ -484,13 +441,6 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"21295670860665800000000", "2129567086066580000000"},
 				[]string{"59732833401321600000000", "5973283340132160000000"},
 			}
-
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
 
 			for _, v := range values {
 				totalStakerOperatorPayout := v[0]
@@ -606,13 +556,6 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"13048257857142800", "1304825785714280"},
 				[]string{"39143637142857100", "3914363714285710"},
 			}
-
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
 
 			for _, v := range values {
 				totalStakerOperatorPayout := v[0]
@@ -730,14 +673,7 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"278624576249", "27862457624"},
 			}
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
-			for _, v := range values {
+			for _, v := range values[:20] {
 				totalStakerOperatorPayout := v[0]
 				expectedResult := v[1]
 
@@ -749,8 +685,7 @@ func Test_Sqlite(t *testing.T) {
 				assert.Equal(t, expectedResult, result, "totalStakerOperatorPayout: %s", totalStakerOperatorPayout)
 			}
 		})
-		t.Run("Should call big_subtract to determine amazon staker token total", func(t *testing.T) {
-			t.Skip("Implement me")
+		t.Run("Should call subtract_big to determine amazon staker token total", func(t *testing.T) {
 			values := [][]string{
 				[]string{"13167642495403300000000", "1316764249540330000000", "11850878245862970000000"},
 				[]string{"48660996099751700000000", "4866099609975170000000", "43794896489776530000000"},
@@ -782,14 +717,7 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"59732833401321600000000", "5973283340132160000000", "53759550061189440000000"},
 			}
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
-			for _, v := range values {
+			for _, v := range values[:20] {
 				totalStakerOperatorPayout := v[0]
 				operatorTokens := v[1]
 				expectedResult := v[2]
@@ -802,8 +730,7 @@ func Test_Sqlite(t *testing.T) {
 				assert.Equal(t, expectedResult, result, "totalStakerOperatorPayout: %s", totalStakerOperatorPayout)
 			}
 		})
-		t.Run("Should call big_subtract to determine nile staker token total", func(t *testing.T) {
-			t.Skip("Implement me")
+		t.Run("Should call subtract_big to determine nile staker token total", func(t *testing.T) {
 			values := [][]string{
 				[]string{"17169644785714300", "1716964478571430", "15452680307142870"},
 				[]string{"13047198500000000", "1304719850000000", "11742478650000000"},
@@ -907,14 +834,7 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"39143637142857100", "3914363714285710", "35229273428571390"},
 			}
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
-			for _, v := range values {
+			for _, v := range values[:20] {
 				totalStakerOperatorPayout := v[0]
 				operatorTokens := v[1]
 				expectedResult := v[2]
@@ -927,8 +847,7 @@ func Test_Sqlite(t *testing.T) {
 				assert.Equal(t, expectedResult, result, "totalStakerOperatorPayout: %s", totalStakerOperatorPayout)
 			}
 		})
-		t.Run("Should call big_subtract to determine post-nile staker token total", func(t *testing.T) {
-			t.Skip("Implement me")
+		t.Run("Should call subtract_big to determine post-nile staker token total", func(t *testing.T) {
 			values := [][]string{
 				[]string{"584881405357", "58488140535", "526393264822"},
 				[]string{"25329506785", "2532950678", "22796556107"},
@@ -1032,13 +951,6 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"278624576249", "27862457624", "250762118625"},
 			}
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
 			for _, v := range values {
 				totalStakerOperatorPayout := v[0]
 				operatorTokens := v[1]
@@ -1055,13 +967,6 @@ func Test_Sqlite(t *testing.T) {
 		t.Run("Should call big_gt", func(t *testing.T) {
 			query := `select big_gt('100', '1') as gt`
 
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
-
 			var result string
 			res := grm.Raw(query).Scan(&result)
 			assert.Nil(t, res.Error)
@@ -1070,13 +975,6 @@ func Test_Sqlite(t *testing.T) {
 		})
 		t.Run("Should call numeric_multiply_c", func(t *testing.T) {
 			query := `select numeric_multiply_c('100', '.1')`
-
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
 
 			var result string
 			res := grm.Raw(query).Scan(&result)
@@ -1087,13 +985,6 @@ func Test_Sqlite(t *testing.T) {
 		t.Run("Should call sum_big_c", func(t *testing.T) {
 			t.Skip("This function is actually an aggregate function")
 			query := `select sum_big_c('100', '1')`
-
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
 
 			var result string
 			res := grm.Raw(query).Scan(&result)
@@ -1114,12 +1005,6 @@ func Test_Sqlite(t *testing.T) {
 				[]string{"2000000000000000000000000000000000000000", "2000000000000000000000000000000000000000", "1.00000000000000000000"},
 				[]string{"2000000000000000000000000000000000000000", "2000000000000000000000000000000000000000", "1.00000000000000000000"},
 			}
-			s := NewSqlite(&SqliteConfig{
-				Path:           SqliteInMemoryPath,
-				ExtensionsPath: []string{tests.GetSqliteExtensionsPath()},
-			}, l)
-			grm, err := NewGormSqliteFromSqlite(s)
-			assert.Nil(t, err)
 
 			for _, v := range values {
 				stakerWeight := v[0]

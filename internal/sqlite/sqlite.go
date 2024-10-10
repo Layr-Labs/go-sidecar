@@ -105,10 +105,6 @@ func NewSqlite(cfg *SqliteConfig, l *zap.Logger) gorm.Dialector {
 					l.Sugar().Errorw("Failed to register aggregator sum_big_windowed", "error", err)
 					return err
 				}
-				if err := conn.RegisterFunc("subtract_big", numbers.SubtractBig, true); err != nil {
-					l.Sugar().Errorw("Failed to register function subtract_big", "error", err)
-					return err
-				}
 				if err := conn.RegisterFunc("numeric_multiply", numbers.NumericMultiply, true); err != nil {
 					l.Sugar().Errorw("Failed to register function NumericMultiply", "error", err)
 					return err

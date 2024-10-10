@@ -78,4 +78,10 @@ limit 100
 ## Post-nile staker final totals query
 
 ```sql
+select
+    total_staker_operator_payout,
+    operator_tokens,
+    staker_tokens
+from dbt_mainnet_ethereum_rewards."staker_rewards__2024-09-01 00:00:00_s_2024-09-02 16:00:02"
+limit 100
 ```

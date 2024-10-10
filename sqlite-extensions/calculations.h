@@ -44,6 +44,9 @@ static void sum_big_finalize(sqlite3_context* context);
 char* _calculate_staker_proportion(const char* stakerWeight, const char* totalWeight);
 void calculate_staker_proportion(sqlite3_context *context, int argc, sqlite3_value **argv);
 
+char* _subtract_big(const char* a, const char* b);
+void subtract_big(sqlite3_context *context, int argc, sqlite3_value **argv);
+
 void sqlite3_calculations_shutdown(void);
 
 #endif // CALCULATIONS_H
