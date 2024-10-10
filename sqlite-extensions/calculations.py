@@ -60,8 +60,19 @@ def amazonOperatorTokenRewards(totalStakerOperatorTokens:str) -> str:
 
 # Former sql query: (total_staker_operator_payout * 0.10)::text::decimal(38,0)
 # This is the same as the nileStakerTokenRewards function, just with different inputs
-def nileOperatorTokenRewards(totalStakerOperatorTokens:str) -> str:
-    return nileStakerTokenRewards(totalStakerOperatorTokens, '0.10')
+def nileOperatorTokenRewards(tsot:str) -> str:
+    getcontext().prec = 15
+    getcontext().rounding = ROUND_HALF_UP
+
+    # Perform the multiplication
+    result = Decimal(tsot) * Decimal('.1')
+    print("result: {}".format(result))
+
+    getcontext().prec = 38
+    res_decimal = result.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+
+    # Convert to string, ensuring no scientific notation
+    return "{}".format(res_decimal, 'f')
 
 
 # Former sql query: floor(total_staker_operator_payout * 0.10)
