@@ -23,15 +23,17 @@ def amazonStakerTokenRewards(sp:str, tpd:str) -> str:
     # Convert to string, ensuring no scientific notation
     return "{}".format(int(result))
 
+# Former sql query: (staker_proportion * tokens_per_day)::text::decimal(38,0)
 def nileStakerTokenRewards(sp:str, tpd:str) -> str:
-    getcontext().prec = 16
-    getcontext().rounding = ROUND_UP
+    getcontext().prec = 15
+    getcontext().rounding = ROUND_HALF_UP
     # Convert string inputs to Decimal, preserving original precision
     proportion = Decimal(sp)
     tokens = Decimal(tpd)
 
     # Perform the multiplication
     result = proportion * tokens
+    print("result: {}".format(result))
 
     getcontext().prec = 38
     res_decimal = result.quantize(Decimal('1'), rounding=ROUND_UP)
@@ -50,24 +52,23 @@ def stakerTokenRewards(sp:str, tpd:str) -> str:
     floored = decimal_res.quantize(Decimal('1'), rounding=ROUND_DOWN)
     return "{}".format(floored, 'f')
 
-
+# Former sql query: cast(total_staker_operator_payout * 0.10 AS DECIMAL(38,0))
+# This is the same as the amazonStakerTokens function, just with different inputs
 def amazonOperatorTokenRewards(totalStakerOperatorTokens:str) -> str:
-    getcontext().prec = 38
-    totalStakerOperatorTokens = Decimal(totalStakerOperatorTokens)
+    return amazonStakerTokenRewards(totalStakerOperatorTokens, '0.10')
 
-    operatorTokens = totalStakerOperatorTokens * Decimal(0.1)
 
-    rounded = operatorTokens.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
-
-    return "{}".format(rounded)
-
+# Former sql query: (total_staker_operator_payout * 0.10)::text::decimal(38,0)
+# This is the same as the nileStakerTokenRewards function, just with different inputs
 def nileOperatorTokenRewards(totalStakerOperatorTokens:str) -> str:
-    if totalStakerOperatorTokens[-1] == "0":
-        return "{}".format(int(totalStakerOperatorTokens) // 10)
-    totalStakerOperatorTokens = Decimal(totalStakerOperatorTokens)
-    operatorTokens = Decimal(str(totalStakerOperatorTokens)) * Decimal(0.1)
-    rounded = operatorTokens.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
-    return "{}".format(rounded)
+    return nileStakerTokenRewards(totalStakerOperatorTokens, '0.10')
+
+
+# Former sql query: floor(total_staker_operator_payout * 0.10)
+# This is the same as the stakerTokenRewards function, just with different inputs
+def operatorTokenRewards(totalStakerOperatorTokens:str) -> str:
+    return stakerTokenRewards(totalStakerOperatorTokens, '0.10')
+
 
 def bigGt(a:str, b:str) -> bool:
     return Decimal(a) > Decimal(b)
@@ -95,16 +96,3 @@ def calculateStakerProportion(stakerWeightStr: str, totalWeightStr: str) -> str:
     preProportion2 = preProportion1 / Decimal('1000000000000000')
 
     return "{}".format(preProportion2, 'f')
-
-#print("Actual  ", stakerTokenRewards('0.07148054555830600000', '3.9285714285714246e+17'))
-#print("expected 28081642897905928")
-#print('\n')
-#print("Actual  ", nileStakerTokenRewards('0.013636363636363', '3571428571428568000000000000000000000'))
-#print("expected 48701298701296390000000000000000000")
-#exit()
-#print('\n')
-#print("Actual  ", nileStakerTokenRewards('', ''))
-#print("expected ")
-#print('\n')
-#print("Actual  ", nileStakerTokenRewards('', ''))
-#print("expected ")

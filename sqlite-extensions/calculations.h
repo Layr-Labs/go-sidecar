@@ -26,6 +26,9 @@ void amazon_operator_token_rewards(sqlite3_context *context, int argc, sqlite3_v
 char* _nile_operator_token_rewards(const char* totalStakerOperatorTokens);
 void nile_operator_token_rewards(sqlite3_context *context, int argc, sqlite3_value **argv);
 
+char* _operator_token_rewards(const char* totalStakerOperatorTokens);
+void operator_token_rewards(sqlite3_context *context, int argc, sqlite3_value **argv);
+
 int _big_gt(const char* a, const char* b);
 void big_gt(sqlite3_context *context, int argc, sqlite3_value **argv);
 

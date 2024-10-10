@@ -242,7 +242,6 @@ void staker_token_rewards(sqlite3_context *context, int argc, sqlite3_value **ar
 char* _amazon_operator_token_rewards(const char* totalStakerOperatorTokens) {
     return call_python_func("amazonOperatorTokenRewards", totalStakerOperatorTokens, NULL);
 }
-
 void amazon_operator_token_rewards(sqlite3_context *context, int argc, sqlite3_value **argv) {
     if (argc != 1) {
         sqlite3_result_error(context, "amazon_operator_token_rewards() requires exactly one argument", -1);
@@ -263,7 +262,6 @@ void amazon_operator_token_rewards(sqlite3_context *context, int argc, sqlite3_v
     sqlite3_result_text(context, tokens, -1, SQLITE_TRANSIENT);
 }
 
-
 char* _nile_operator_token_rewards(const char* totalStakerOperatorTokens) {
     return call_python_func("nileOperatorTokenRewards", totalStakerOperatorTokens, NULL);
 }
@@ -279,6 +277,29 @@ void nile_operator_token_rewards(sqlite3_context *context, int argc, sqlite3_val
     }
 
     char* tokens = _nile_operator_token_rewards(input);
+    if (!tokens) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    sqlite3_result_text(context, tokens, -1, SQLITE_TRANSIENT);
+}
+
+char* _operator_token_rewards(const char* totalStakerOperatorTokens) {
+    return call_python_func("operatorTokenRewards", totalStakerOperatorTokens, NULL);
+}
+void operator_token_rewards(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    if (argc != 1) {
+        sqlite3_result_error(context, "operator_token_rewards() requires exactly one argument", -1);
+        return;
+    }
+    const char* input = (const char*)sqlite3_value_text(argv[0]);
+    if (!input) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    char* tokens = _operator_token_rewards(input);
     if (!tokens) {
         sqlite3_result_null(context);
         return;
@@ -474,6 +495,12 @@ int sqlite3_calculations_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_ro
     }
 
     rc = sqlite3_create_function(db, "nile_operator_token_rewards", 1, SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, nile_operator_token_rewards, 0, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    rc = sqlite3_create_function(db, "operator_token_rewards", 1, SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, operator_token_rewards, 0, 0);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
         return rc;
