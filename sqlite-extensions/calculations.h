@@ -29,6 +29,18 @@ void nile_operator_token_rewards(sqlite3_context *context, int argc, sqlite3_val
 int _big_gt(const char* a, const char* b);
 void big_gt(sqlite3_context *context, int argc, sqlite3_value **argv);
 
+// char* _sum_big_c(const char* a, const char* b);
+// void sum_big_c(sqlite3_context *context, int argc, sqlite3_value **argv);
+
+char* _numeric_multiply_c(const char* a, const char* b);
+void numeric_multiply_c(sqlite3_context *context, int argc, sqlite3_value **argv);
+
+static void sum_big_step(sqlite3_context* context, int argc, sqlite3_value** argv);
+static void sum_big_finalize(sqlite3_context* context);
+
+char* _calculate_staker_proportion(const char* stakerWeight, const char* totalWeight);
+void calculate_staker_proportion(sqlite3_context *context, int argc, sqlite3_value **argv);
+
 void sqlite3_calculations_shutdown(void);
 
 #endif // CALCULATIONS_H

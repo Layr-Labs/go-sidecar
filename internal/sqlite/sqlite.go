@@ -113,10 +113,6 @@ func NewSqlite(cfg *SqliteConfig, l *zap.Logger) gorm.Dialector {
 					l.Sugar().Errorw("Failed to register function NumericMultiply", "error", err)
 					return err
 				}
-				// if err := conn.RegisterFunc("big_gt", numbers.BigGreaterThan, true); err != nil {
-				// 	l.Sugar().Errorw("Failed to register function BigGreaterThan", "error", err)
-				// 	return err
-				// }
 				if err := conn.RegisterFunc("bytes_to_hex", bytesToHex, true); err != nil {
 					l.Sugar().Errorw("Failed to register function bytes_to_hex", "error", err)
 					return err
@@ -129,10 +125,6 @@ func NewSqlite(cfg *SqliteConfig, l *zap.Logger) gorm.Dialector {
 				// Forked tokens per day
 				if err := conn.RegisterFunc("post_nile_tokens_per_day", numbers.PostNileTokensPerDay, true); err != nil {
 					l.Sugar().Errorw("Failed to register function PostNileTokensPerDay", "error", err)
-					return err
-				}
-				if err := conn.RegisterFunc("calc_staker_proportion", numbers.CalculateStakerProportion, true); err != nil {
-					l.Sugar().Errorw("Failed to register function CalculateStakerProportion", "error", err)
 					return err
 				}
 				if err := conn.RegisterFunc("calc_staker_weight", numbers.CalculateStakerWeight, true); err != nil {

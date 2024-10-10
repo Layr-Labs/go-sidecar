@@ -95,7 +95,19 @@ func setupRewards() (
 	error,
 ) {
 	cfg := tests.GetConfig()
-	cfg.Chain = config.Chain_Holesky
+	testContext := getRewardsTestContext()
+	switch testContext {
+	case "testnet":
+		cfg.Chain = config.Chain_Holesky
+	case "testnet-reduced":
+		cfg.Chain = config.Chain_Holesky
+	case "mainnet-reduced":
+		cfg.Chain = config.Chain_Mainnet
+	default:
+		return "", nil, nil, nil, fmt.Errorf("Unknown test context")
+	}
+	fmt.Printf("Test context: %+v\n", testContext)
+	fmt.Printf("Using chain: %+v\n", cfg.Chain)
 	cfg.Debug = true
 	l, _ := logger.NewLogger(&logger.LoggerConfig{Debug: cfg.Debug})
 
@@ -266,7 +278,7 @@ func Test_Rewards(t *testing.T) {
 
 		fmt.Printf("Done!\n\n")
 		t.Cleanup(func() {
-			teardownRewards(grm)
+			// teardownRewards(grm)
 			// tests.DeleteTestSqliteDB(dbFileName)
 		})
 	})

@@ -312,6 +312,133 @@ void big_gt(sqlite3_context *context, int argc, sqlite3_value **argv){
     sqlite3_result_int(context, is_greater ? 1 : 0);
 }
 
+char* _sum_big_c(const char* a, const char* b) {
+    return call_python_func("sumBigC", a, b);
+}
+
+void sum_big_c(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    if (argc != 2) {
+        sqlite3_result_error(context, "_sum_big_c() requires two arguments", -1);
+        return;
+    }
+    const char* a = (const char*)sqlite3_value_text(argv[0]);
+    if (!a) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    const char* b = (const char*)sqlite3_value_text(argv[1]);
+    if (!b) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    char* tokens = _sum_big_c(a, b);
+    if (!tokens) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    sqlite3_result_text(context, tokens, -1, SQLITE_TRANSIENT);
+}
+
+char* _numeric_multiply_c(const char* a, const char* b) {
+    return call_python_func("numericMultiplyC", a, b);
+}
+
+void numeric_multiply_c(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    if (argc != 2) {
+        sqlite3_result_error(context, "_numeric_multiply_c() requires two arguments", -1);
+        return;
+    }
+    const char* a = (const char*)sqlite3_value_text(argv[0]);
+    if (!a) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    const char* b = (const char*)sqlite3_value_text(argv[1]);
+    if (!b) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    char* tokens = _numeric_multiply_c(a, b);
+    if (!tokens) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    sqlite3_result_text(context, tokens, -1, SQLITE_TRANSIENT);
+}
+
+typedef struct SumContext {
+    char* current_sum;
+} SumContext;
+
+static void sum_big_step(sqlite3_context* context, int argc, sqlite3_value** argv) {
+    SumContext* ctx = (SumContext*)sqlite3_aggregate_context(context, sizeof(SumContext));
+
+    if (argc != 1) {
+        sqlite3_result_error(context, "sum_big() requires one argument", -1);
+        return;
+    }
+
+    const char* value = (const char*)sqlite3_value_text(argv[0]);
+    if (!value) {
+        return; // Skip NULL values
+    }
+
+    if (!ctx->current_sum) {
+        ctx->current_sum = strdup(value);
+    } else {
+        char* new_sum = _sum_big_c(ctx->current_sum, value);
+        free(ctx->current_sum);
+        ctx->current_sum = new_sum;
+    }
+}
+
+static void sum_big_finalize(sqlite3_context* context) {
+    SumContext* ctx = (SumContext*)sqlite3_aggregate_context(context, sizeof(SumContext));
+
+    if (ctx && ctx->current_sum) {
+        sqlite3_result_text(context, ctx->current_sum, -1, SQLITE_TRANSIENT);
+        free(ctx->current_sum);
+    } else {
+        sqlite3_result_null(context);
+    }
+}
+
+char* _calculate_staker_proportion(const char* stakerWeight, const char* totalWeight) {
+    return call_python_func("calculateStakerProportion", stakerWeight, totalWeight);
+}
+
+void calculate_staker_proportion(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    if (argc != 2) {
+        sqlite3_result_error(context, "_numeric_multiply_c() requires two arguments", -1);
+        return;
+    }
+    const char* stakerWeight = (const char*)sqlite3_value_text(argv[0]);
+    if (!stakerWeight) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    const char* totalWeight = (const char*)sqlite3_value_text(argv[1]);
+    if (!totalWeight) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    char* tokens = _calculate_staker_proportion(stakerWeight, totalWeight);
+    if (!tokens) {
+        sqlite3_result_null(context);
+        return;
+    }
+
+    sqlite3_result_text(context, tokens, -1, SQLITE_TRANSIENT);
+}
+
 int sqlite3_calculations_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi) {
     SQLITE_EXTENSION_INIT2(pApi);
 
@@ -357,6 +484,25 @@ int sqlite3_calculations_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_ro
         fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
         return rc;
     }
+
+    rc = sqlite3_create_function(db, "numeric_multiply_c", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, numeric_multiply_c, 0, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    rc = sqlite3_create_function(db, "sum_big_c", 1, SQLITE_UTF8 | SQLITE_DETERMINISTIC, NULL, NULL, sum_big_step, sum_big_finalize);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    rc = sqlite3_create_function(db, "calculate_staker_proportion", 2, SQLITE_UTF8 | SQLITE_DETERMINISTIC, 0, calculate_staker_proportion, 0, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to create function: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
     return SQLITE_OK;
 }
 

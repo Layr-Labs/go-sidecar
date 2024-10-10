@@ -155,6 +155,14 @@ func Test_Numbers(t *testing.T) {
 
 	})
 
+	//t.Run("Test CalculateStakerProportion", func(t *testing.T) {
+	//	stakerWeight := "2586595906852124520000000000000000000"
+	//	totalWeight := "78563914570073760561000000000000000000"
+	//
+	//	amount, err := CalculateStakerProportion(stakerWeight, totalWeight)
+	//	assert.Nil(t, err)
+	//	assert.Equal(t, "1428571428571428571428571428571428571.4142857142857143", amount)
+	//})
 	t.Run("Test CalcRawTokensPerDay", func(t *testing.T) {
 		amountStr := "99999999999999999999999999999999999999"
 		duration := uint64(6048000)

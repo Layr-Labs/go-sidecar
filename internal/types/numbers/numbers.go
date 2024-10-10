@@ -80,21 +80,18 @@ func PostNileTokensPerDay(tokensPerDay string) (string, error) {
 	return tpd.BigInt().String(), nil
 }
 
-// CalculateStakerProportion calculates the staker weight for a given staker and total weight
-func CalculateStakerProportion(stakerWeightStr string, totalWeightStr string) (string, error) {
-	stakerWeight, err := decimal.NewFromString(stakerWeightStr)
+func StakerTokenRewards(stakerProportaion string, tokensPerDay string) (string, error) {
+	decimal.DivisionPrecision = 38
+	sp, err := decimal.NewFromString(stakerProportaion)
 	if err != nil {
 		return "", err
 	}
-	totalWeight, err := decimal.NewFromString(totalWeightStr)
+	tpd, err := decimal.NewFromString(tokensPerDay)
 	if err != nil {
 		return "", err
 	}
 
-	res := ((stakerWeight.Div(totalWeight)).Mul(decimal.NewFromInt(1000000000000000))).
-		Div(decimal.NewFromInt(1000000000000000)).
-		Floor()
-	return res.String(), nil
+	return sp.Mul(tpd).String(), nil
 }
 
 func CalculateStakerWeight(multiplier string, shares string) (string, error) {
