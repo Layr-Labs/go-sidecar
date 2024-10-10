@@ -55,7 +55,17 @@ def stakerTokenRewards(sp:str, tpd:str) -> str:
 # Former sql query: cast(total_staker_operator_payout * 0.10 AS DECIMAL(38,0))
 # This is the same as the amazonStakerTokens function, just with different inputs
 def amazonOperatorTokenRewards(totalStakerOperatorTokens:str) -> str:
-    return amazonStakerTokenRewards(totalStakerOperatorTokens, '0.10')
+    # Set precision to 38 to match DECIMAL(38,0)
+    getcontext().prec = 15
+
+    # Perform the multiplication
+    result = Decimal(totalStakerOperatorTokens) * Decimal('.1')
+
+    getcontext().prec = 38
+    res_floor = result.quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+
+    # Convert to string, ensuring no scientific notation
+    return "{}".format(res_floor)
 
 
 # Former sql query: (total_staker_operator_payout * 0.10)::text::decimal(38,0)
